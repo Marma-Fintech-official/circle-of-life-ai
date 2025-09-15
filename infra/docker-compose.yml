@@ -3,10 +3,8 @@ services:
   postgres:
     image: postgres:15
     restart: always
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: nimda
-      POSTGRES_DB: circleoflife
+    env_file:
+      - ../.env         # <-- reads DB_USER, DB_PASSWORD, DB_NAME
     ports:
       - "5432:5432"
     volumes:
@@ -24,28 +22,27 @@ services:
   minio:
     image: minio/minio
     container_name: minio
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+    env_file:
+      - ../.env         # <-- reads S3_ACCESS_KEY, S3_SECRET_KEY
     ports:
-      - "9000:9000"   # S3 API
-      - "9001:9001"   # MinIO web console
+      - "9000:9000"
+      - "9001:9001"
     command: server /data --console-address ":9001"
     volumes:
       - minio-data:/data
 
   backend:
     build:
-      context: ../           # Project root where Dockerfile exists
+      context: ../
       dockerfile: Dockerfile
     container_name: circle-of-life-backend
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
     volumes:
-      - ../app:/app          # Backend code
-      - ../db:/db            # DB utils (Postgres & S3 utils)
-      - ../.env.example:/.env.example  # Env vars
+      - ../app:/app
+      - ../db:/db
+      - ../.env:/.env     # <-- mount local .env with real credentials
     depends_on:
       - postgres
       - minio
