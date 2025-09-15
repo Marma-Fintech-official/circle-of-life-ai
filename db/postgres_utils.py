@@ -7,7 +7,7 @@ from psycopg2 import OperationalError
 from dotenv import load_dotenv
 
 # Load .env.example explicitly
-load_dotenv(dotenv_path="../.env.example")
+load_dotenv()
 
 def create_connection() -> psycopg2.extensions.connection | None:
     """

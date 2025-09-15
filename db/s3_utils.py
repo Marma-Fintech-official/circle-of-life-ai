@@ -6,7 +6,7 @@ import boto3
 from dotenv import load_dotenv
 
 # Load .env.example explicitly
-load_dotenv(dotenv_path="../.env.example")
+load_dotenv()
 
 def get_s3_client():
     """
