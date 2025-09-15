@@ -1,0 +1,13 @@
+[project]
+name = "circle-of-life-ai"
+version = "0.1.0"
+description = "Circle of Life MCP backend"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "psycopg2-binary",
+    "boto3",
+    "mcp-server"
+]

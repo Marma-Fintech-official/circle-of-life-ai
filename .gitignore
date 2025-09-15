@@ -1,0 +1,77 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pdb
+*.egg
+*.egg-info/
+dist/
+build/
+*.log
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Python Bytecode
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Docker
+*.env.*       # If you have multiple env files per service
+docker-compose.override.yml
+*.pid
+*.swp
+
+# Postgres / Databases
+*.db
+*.sqlite3
+*.dump
+pgdata/
+
+# Logs
+logs/
+*.log
+*.out
+
+# Testing / Coverage
+htmlcov/
+.tox/
+.coverage
+.nox/
+.pytest_cache/
+.cache/
+nosetests.xml
+coverage.xml
+junit.xml
+
+# Bytecode / Build Artifacts
+*.so
+*.dylib
+*.dll
+
+# Misc
+*.DS_Store
+*.bak
+*.orig
+*.tmp
+*.swp
