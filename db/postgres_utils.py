@@ -1,26 +1,25 @@
-# postgres_utils.py
-# code owner: shiva palaksha
-# maintainer: Saravanamuthu Muthu
+# Code owner: Shiva Palaksha
+# Maintainer: Saravanamuthu Muthu
 
 import os
 import psycopg2
 from psycopg2 import OperationalError
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load .env.example explicitly
+load_dotenv(dotenv_path="../.env.example")
 
 def create_connection() -> psycopg2.extensions.connection | None:
     """
     Create and return a connection to the PostgreSQL database.
-    Uses Docker Compose service name as host.
+    Uses Docker Compose service name as host if running in Docker.
     """
     try:
         connection = psycopg2.connect(
             dbname=os.getenv("DB_NAME", "circleoflife"),
             user=os.getenv("DB_USER", "admin"),
             password=os.getenv("DB_PASSWORD", "nimda"),
-            host=os.getenv("DB_HOST", "postgres"),  # <-- Use service name
+            host=os.getenv("DB_HOST", "postgres"),  # Docker service name
             port=os.getenv("DB_PORT", "5432")
         )
         print("✅ PostgreSQL connection established!")
@@ -38,7 +37,6 @@ def close_connection(connection: psycopg2.extensions.connection) -> None:
 if __name__ == "__main__":
     conn = create_connection()
     if conn:
-        # Optional: show list of databases
         cur = conn.cursor()
         cur.execute("SELECT datname FROM pg_database;")
         dbs = cur.fetchall()
