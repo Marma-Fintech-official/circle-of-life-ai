@@ -1,5 +1,5 @@
 # Code owner: Shiva Palaksha
-# Maintainer: Saravanamuthu Muthu
+# Maintainer: Saravanamuthu Muthusamy
 
 import os
 import psycopg2

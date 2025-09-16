@@ -75,3 +75,7 @@ junit.xml
 *.orig
 *.tmp
 *.swp
+
+# pgAdmin passwords
+pgadmin/pgpassfile
+pgadmin/servers/servers.json

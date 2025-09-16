@@ -9,5 +9,8 @@ dependencies = [
     "uvicorn",
     "psycopg2-binary",
     "boto3",
-    "mcp-server"
+    "mcp-server",
+    "pytest"
 ]
+[tool.pytest.ini_options]
+pythonpath = ["."]

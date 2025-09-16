@@ -1,5 +1,5 @@
 # Code owner: Yazeen Rizwan
-# Maintainer: Saravanamuthu Muthu
+# Maintainer: Saravanamuthu Muthusamy
 
 import os
 import boto3
