@@ -1,25 +1,19 @@
-# Code owner: Shiva Palaksha
-# Maintainer: Saravanamuthu Muthusamy
-
 import os
 import psycopg2
+import asyncpg
 from psycopg2 import OperationalError
 from dotenv import load_dotenv
 
-# Load .env.example explicitly
 load_dotenv()
 
+# ------------------ Sync Connection ------------------
 def create_connection() -> psycopg2.extensions.connection | None:
-    """
-    Create and return a connection to the PostgreSQL database.
-    Uses Docker Compose service name as host if running in Docker.
-    """
     try:
         connection = psycopg2.connect(
             dbname=os.getenv("DB_NAME", "circleoflife"),
             user=os.getenv("DB_USER", "admin"),
             password=os.getenv("DB_PASSWORD", "nimda"),
-            host=os.getenv("DB_HOST", "postgres"),  # Docker service name
+            host=os.getenv("DB_HOST", "postgres"),
             port=os.getenv("DB_PORT", "5432")
         )
         print("✅ PostgreSQL connection established!")
@@ -29,17 +23,25 @@ def create_connection() -> psycopg2.extensions.connection | None:
         return None
 
 def close_connection(connection: psycopg2.extensions.connection) -> None:
-    """Safely close the database connection."""
     if connection:
         connection.close()
         print("✅ Database connection closed.")
 
-if __name__ == "__main__":
-    conn = create_connection()
-    if conn:
-        cur = conn.cursor()
-        cur.execute("SELECT datname FROM pg_database;")
-        dbs = cur.fetchall()
-        print("Databases available:", [db[0] for db in dbs])
-        cur.close()
-        close_connection(conn)
+# ------------------ Async Connection ------------------
+async def create_async_pool() -> asyncpg.pool.Pool:
+    pool = await asyncpg.create_pool(
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        database=os.getenv("DB_NAME"),
+        host=os.getenv("DB_HOST"),  # Removed hardcoded 'localhost'
+        port=int(os.getenv("DB_PORT", 5432)),
+        min_size=1,
+        max_size=10,
+    )
+    print("✅ Async PostgreSQL pool established!")
+    return pool
+
+async def close_async_pool(pool: asyncpg.pool.Pool) -> None:
+    if pool:
+        await pool.close()
+        print("✅ Async PostgreSQL pool closed.")

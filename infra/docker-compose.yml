@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   postgres:
     image: postgres:15
@@ -7,7 +9,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/
+      - pgdata:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   pgadmin:
@@ -39,17 +41,21 @@ services:
       context: ../
       dockerfile: Dockerfile
     container_name: circle-of-life-backend
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
     volumes:
-      - ../app:/app
-      - ../db:/db
-      - ../app/tests:/app/tests
+      - ../app:/app/app
+      - ../db:/app/db
       - ../.env:/.env
     depends_on:
       - postgres
       - minio
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/ready"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
 volumes:
   pgdata:

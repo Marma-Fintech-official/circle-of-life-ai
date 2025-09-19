@@ -1,6 +1,9 @@
 -- init.sql
 -- Code owner: Saravanamuthu Muthusamy, shiva palaksha, yazeen rizwan
 -- Maintainer: Saravanamuthu Muthusamy
+-- init.sql
+-- Code owner: Saravanamuthu Muthusamy, shiva palaksha, yazeen rizwan
+-- Maintainer: Saravanamuthu Muthusamy
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 

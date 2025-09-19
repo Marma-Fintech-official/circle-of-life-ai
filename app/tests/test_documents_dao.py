@@ -1,41 +1,63 @@
 # app/tests/test_documents_dao.py
-import os
-import json
+# app/tests/test_documents_dao.py
 import pytest
+import uuid
+import pytest_asyncio
 from app.dao.documents_dao import DocumentsDAO
+from db.postgres_utils import create_async_pool, close_async_pool
 
-SAMPLE_FILE = "sample_conversation.json"
+BUCKET_NAME = "documents-bucket"
 
-@pytest.fixture(scope="function")
-def dao():
-    return DocumentsDAO()
+@pytest_asyncio.fixture(scope="function")
+async def pool():
+    pool = await create_async_pool()
+    yield pool
+    await close_async_pool(pool)
 
-@pytest.fixture(scope="function")
-def sample_file(tmp_path):
-    file_path = tmp_path / SAMPLE_FILE
-    sample_data = {
-        "user_id": "11111111-1111-1111-1111-111111111111",
-        "session_id": "22222222-2222-2222-2222-222222222222",
-        "username": "testuser",
-        "email": "test@example.com",
-        "password_hash": "dummyhash",
-        "content": [
-            {"role": "user", "message": "Hello"},
-            {"role": "assistant", "message": "Hi there!"}
-        ]
+@pytest_asyncio.fixture
+async def dao(pool):
+    return DocumentsDAO(pool, BUCKET_NAME)
+
+@pytest.fixture
+def sample_conversation():
+    user_id = str(uuid.uuid4())
+    # Use the unique user_id to create a unique username and email
+    unique_suffix = user_id[:8]
+    metadata = {
+        "user_id": user_id,
+        "username": f"mock_user_{unique_suffix}", # Make username unique
+        "email": f"mock_{unique_suffix}@example.com", # Email is already unique, but this is a good pattern
+        "password_hash": "mockhash123",
+        "session_id": str(uuid.uuid4()),
+        "role": "user"
     }
-    with open(file_path, "w") as f:
-        json.dump(sample_data, f)
-    return file_path, sample_data
+    conversation = [
+        {"content": "What should I do today?", "role": "user"},
+        {"content": "Go for a short walk or hike.", "role": "assistant"}
+    ]
+    return metadata, conversation
 
-def test_create_document(dao, sample_file):
-    file_path, metadata = sample_file
-    document_id = dao.create_document(str(file_path), metadata)
-    assert document_id is not None
-    print(f"Document created with ID: {document_id}")
+@pytest.mark.asyncio
+async def test_create_conversation(dao, sample_conversation):
+    metadata, conversation = sample_conversation
+    conv_id = await dao.create_conversation(metadata, conversation)
+    assert conv_id is not None
 
-    # Verify get_document works
-    doc = dao.get_document(document_id)
-    assert doc is not None
-    assert doc["id"] == document_id
-    assert doc["user_id"] == metadata["user_id"]
+@pytest.mark.asyncio
+async def test_get_conversation(dao, sample_conversation):
+    metadata, conversation = sample_conversation
+    conv_id = await dao.create_conversation(metadata, conversation)
+    result = await dao.get_conversation(conv_id)
+    assert result is not None
+    assert result["conversation"][0]["content"] == "What should I do today?"
+
+@pytest.mark.asyncio
+async def test_list_conversations(dao, sample_conversation):
+    metadata, conversation = sample_conversation
+    conversation_ids = []
+    for _ in range(2):
+        conv_id = await dao.create_conversation(metadata, conversation)
+        conversation_ids.append(conv_id)
+
+    results = await dao.list_conversations(metadata["user_id"])
+    assert len(results) >= 2
