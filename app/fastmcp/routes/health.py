@@ -5,7 +5,6 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 import asyncio
-
 from db.postgres_utils import create_connection, close_connection
 from db.s3_utils import get_s3_client
 

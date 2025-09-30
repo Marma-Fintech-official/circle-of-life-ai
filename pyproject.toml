@@ -13,7 +13,10 @@ dependencies = [
     "pytest",
     "asyncpg",        
     "aioboto3",
-    "pytest-asyncio" 
+    "pytest-asyncio", 
+    "SQLAlchemy",
+    "alembic",
+    "sentence-transformers"
 ]
 [tool.pytest.ini_options]
 pythonpath = ["."]

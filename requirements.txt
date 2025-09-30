@@ -7,3 +7,7 @@ pytest
 asyncpg      
 aioboto3
 pytest-asyncio
+pytest-asyncio
+SQLAlchemy
+alembic
+sentence-transformers

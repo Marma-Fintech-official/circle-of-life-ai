@@ -1,47 +1,36 @@
-import os
-import psycopg2
-import asyncpg
-from psycopg2 import OperationalError
-from dotenv import load_dotenv
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import text
+from db.database import engine
 
-load_dotenv()
+SessionLocal = sessionmaker(bind=engine)
 
-# ------------------ Sync Connection ------------------
-def create_connection() -> psycopg2.extensions.connection | None:
+def insert_journal(journal_id, user_id, s3_key, title, content_summary="", profile_id=None):
+    """ 
+    Insert a new journal entry into the journals table.
+    """
+    session = SessionLocal()
     try:
-        connection = psycopg2.connect(
-            dbname=os.getenv("DB_NAME", "circleoflife"),
-            user=os.getenv("DB_USER", "admin"),
-            password=os.getenv("DB_PASSWORD", "nimda"),
-            host=os.getenv("DB_HOST", "postgres"),
-            port=os.getenv("DB_PORT", "5432")
+        session.execute(
+            text(
+                """
+                INSERT INTO journals (id, user_id, profile_id, s3_key, title, content_summary)
+                VALUES (:id, :user_id, :profile_id, :s3_key, :title, :content_summary)
+                """
+            ),
+            {
+                "id": journal_id,
+                "user_id": user_id,
+                "profile_id": profile_id,
+                "s3_key": s3_key,
+                "title": title,
+                "content_summary": content_summary
+            },
         )
-        print("✅ PostgreSQL connection established!")
-        return connection
-    except OperationalError as e:
-        print(f"❌ Failed to connect to the database:\n{e}")
-        return None
-
-def close_connection(connection: psycopg2.extensions.connection) -> None:
-    if connection:
-        connection.close()
-        print("✅ Database connection closed.")
-
-# ------------------ Async Connection ------------------
-async def create_async_pool() -> asyncpg.pool.Pool:
-    pool = await asyncpg.create_pool(
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-        database=os.getenv("DB_NAME"),
-        host=os.getenv("DB_HOST"),  # Removed hardcoded 'localhost'
-        port=int(os.getenv("DB_PORT", 5432)),
-        min_size=1,
-        max_size=10,
-    )
-    print("✅ Async PostgreSQL pool established!")
-    return pool
-
-async def close_async_pool(pool: asyncpg.pool.Pool) -> None:
-    if pool:
-        await pool.close()
-        print("✅ Async PostgreSQL pool closed.")
+        # Insert empty row in journal_metadata for embeddings
+        session.execute(
+            text("INSERT INTO journal_metadata (journal_id) VALUES (:jid)"),
+            {"jid": journal_id}
+        )
+        session.commit()
+    finally:
+        session.close()
